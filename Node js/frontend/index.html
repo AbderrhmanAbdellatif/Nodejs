@@ -1,0 +1,116 @@
+<html>
+
+<head>
+    <title>my dome</title>
+</head>
+
+
+
+<body>
+    <p id="demo"></p>
+    <label id="input"></label>
+    <div id="languagesDiv">
+        <button type="button" id="myBtn" onclick="setLang(`egypt`)">مصرية</button>
+        <button type="button" id="myBtn1" onclick="setLang(`iraq`)">عراقية</button>
+        <button type="button" id="myBtn2" onclick="setLang(`UAE`)">الامارتي</button>
+        <button type="button" onclick="add(`language`)">Add</button>
+
+    </div>
+    <br>
+    <div id="intentsDiv">
+        <button type="button" id="myBtn4" onclick="setIntent(`saglik`)">الصحه</button>
+        <button type="button" id="myBtn5" onclick="setIntent(`soru`)">السوال</button>
+        <button type="button" onclick="add(`intent`)">Add</button>
+    </div>
+
+
+    <script type="text/javascript">
+        let url = "http://localhost:3000/";
+        let TableRows;
+        let i = 0;
+        let lang, intent;
+        //https://stackoverflow.com/questions/7707074/creating-dynamic-button-with-click-event-in-javascript
+        function add(type) {
+            let mainDiv, buttonFunction;
+            if (type == "language") {
+                mainDiv = "languagesDiv"
+                buttonFunction = setLang
+            } else {
+                mainDiv = "intentsDiv"
+                buttonFunction = setIntent
+            }
+
+            //Create an input type dynamically.   
+            let element = document.createElement("input");
+            //Assign different attributes to the element. 
+            element.type = "button";
+            let name = prompt("Please enter The type", "");
+            element.value = name; // Really? You want the default value to be the type string?
+            element.onclick = function() { // Note this is a function
+                return buttonFunction(name)
+            };
+            let temp = document.getElementById(mainDiv);
+            //Append the element in page (in span).  
+            temp.appendChild(element);
+        }
+        fetch(url)
+            .then((res) => {
+                if (res.ok) {
+                    return res.json();
+                }
+            })
+            .then((rows) => {
+                console.log(rows)
+                TableRows = rows
+                printRowName(TableRows[i])
+            })
+            .catch(console.log);
+
+        function setLang(langs) {
+            lang = langs;
+            nextRow()
+        }
+
+        function setIntent(int) {
+            intent = int;
+            nextRow()
+        }
+
+        function nextRow() {
+            //console.log("Next Row checker ", lang, intent, lang && intent)
+            if (!intent) return;
+            if (!lang) return;
+            //console.log("Next Row called", i, TableRows.length)
+            if (TableRows.length <= i) return;
+            // i, lang,intent
+            console.log("Values", i, lang, intent)
+                //https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
+            fetch(url + "submit", {
+                method: 'POST', // or 'PUT'
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    id: TableRows[i].id,
+                    lang,
+                    intent
+                }),
+            }).then(res => {
+                console.log("Request complete! response:", res);
+            });
+            i++;
+            printRowName(TableRows[i])
+            lang = 0;
+            intent = 0;
+        }
+
+        function printRowName(row) {
+            console.log(row.name)
+            document.getElementById("input").innerHTML = row.name + "<br>";
+        }
+    </script>
+</body>
+
+</html>
+
+</html>
